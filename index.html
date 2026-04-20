@@ -1,0 +1,26 @@
+const scriptURL = "ТУТ_ТВІЙ_URL";
+
+const today = new Date();
+const formattedDate = today.toLocaleDateString("uk-UA");
+
+fetch(scriptURL, {
+    method: "POST",
+    body: JSON.stringify({
+        id: id,
+        unit: unit.value,
+        position: position.value,
+        coords: coords.value,
+        cargo: cargo.value,
+        dynamic: dynamicValue.value,
+        callsign: callsign.value,
+        phone: phone.value,
+        comment: comment.value,
+        date: formattedDate
+    })
+})
+.then(() => {
+    window.location.href = url; // редирект в WhatsApp
+})
+.catch(() => {
+    alert("Помилка збереження в таблицю");
+});
