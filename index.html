@@ -1,4 +1,245 @@
-const scriptURL = "ТУТ_ТВІЙ_URL";
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Нова заявка</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #0f0f0f;
+    color: #fff;
+}
+
+.header {
+    padding: 15px;
+    background: #1a1a1a;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.logo {
+    height: 24px;
+}
+
+.container {
+    padding: 15px;
+}
+
+label {
+    display: block;
+    margin: 15px 0 5px;
+    color: #ccc;
+}
+
+.required::after {
+    content: "*";
+    color: #d4af37;
+    margin-left: 4px;
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid #333;
+    background: #1a1a1a;
+    color: #fff;
+    font-size: 16px;
+}
+
+.hidden {
+    display: none;
+}
+
+button {
+    width: 100%;
+    padding: 14px;
+    margin-top: 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    background: #d4af37;
+    color: #000;
+    font-weight: bold;
+}
+
+.link-btn {
+    display: block;
+    text-align: center;
+    margin-top: 10px;
+    padding: 12px;
+    border-radius: 8px;
+    background: #d4af37;
+    color: #000;
+    text-decoration: none;
+    font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+    <img src="https://i.ibb.co/R1Z4HdW/1776440599195-2.jpg" class="logo">
+    Нова заявка
+</div>
+
+<div class="container">
+
+<form id="form">
+
+<label class="required">Підрозділ</label>
+<input id="unit" required>
+
+<label>Позиція</label>
+<input id="position">
+
+<label class="required">Координати</label>
+<input id="coords" required>
+
+<label class="required">Що веземо</label>
+<select id="cargo" required>
+    <option value="" disabled selected hidden>Оберіть варіант</option>
+    <option>Доставка Паливо, Їжа, Вода</option>
+    <option>БК</option>
+    <option>Евак 300</option>
+    <option>Евак 200</option>
+    <option>Евак НРК</option>
+    <option>ЕВАК БПЛА</option>
+    <option>Доставка БПЛА</option>
+    <option>Колоди</option>
+    <option>Вивезти з позиції</option>
+    <option>Обладнання</option>
+    <option>Інше</option>
+</select>
+
+<div id="dynamicBlock" class="hidden">
+    <label id="dynamicLabel"></label>
+    <input type="number" id="dynamicValue">
+</div>
+
+<div id="contactBlock" class="hidden">
+    <label>Позивний бійця на позиції</label>
+    <input id="callsign">
+
+    <label>Телефон на позиції</label>
+    <input id="phone">
+</div>
+
+<label>Коментар</label>
+<textarea id="comment"></textarea>
+
+<button type="submit">Надіслати заявку</button>
+
+<a class="link-btn" href="#">Перевірити статус</a>
+
+</form>
+</div>
+
+<script>
+const cargo = document.getElementById("cargo");
+const dynamicBlock = document.getElementById("dynamicBlock");
+const dynamicLabel = document.getElementById("dynamicLabel");
+const dynamicValue = document.getElementById("dynamicValue");
+
+const position = document.getElementById("position");
+const contactBlock = document.getElementById("contactBlock");
+
+// логіка поля вага/кількість
+cargo.addEventListener("change", () => {
+    const val = cargo.value;
+
+    if (val === "Евак 300" || val === "Евак 200") {
+        dynamicBlock.classList.remove("hidden");
+        dynamicLabel.innerText = "Кількість в/с";
+    } else if (val === "Евак НРК" || val === "ЕВАК БПЛА" || val === "") {
+        dynamicBlock.classList.add("hidden");
+    } else {
+        dynamicBlock.classList.remove("hidden");
+        dynamicLabel.innerText = "Вага (кг)";
+    }
+
+    focusNext(cargo);
+});
+
+// показ контактів
+position.addEventListener("input", () => {
+    if (position.value.trim() !== "") {
+        contactBlock.classList.remove("hidden");
+    } else {
+        contactBlock.classList.add("hidden");
+    }
+});
+
+// генерація ID
+function generateID() {
+    return Math.random().toString(36).substring(2, 10);
+}
+
+// автоперехід
+function focusNext(el) {
+    const inputs = Array.from(document.querySelectorAll("input, select, textarea"))
+        .filter(e => e.offsetParent !== null);
+
+    const index = inputs.indexOf(el);
+    if (inputs[index + 1]) inputs[index + 1].focus();
+}
+
+document.querySelectorAll("input, textarea").forEach(el => {
+    el.addEventListener("keydown", e => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            focusNext(el);
+        }
+    });
+});
+
+cargo.addEventListener("change", () => focusNext(cargo));
+
+// фокус при відкритті
+window.onload = () => {
+    document.getElementById("unit").focus();
+};
+
+// submit
+document.getElementById("form").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const id = generateID();
+    const shortID = id.slice(-3);
+
+    let text = "";
+
+    const add = (label, value) => {
+        if (value) text += `${label}: ${value}\n`;
+    };
+
+    add("Підрозділ", unit.value);
+    add("Позиція", position.value);
+    add("Координати", coords.value);
+    add("Що веземо", cargo.value);
+
+    if (!dynamicBlock.classList.contains("hidden") && dynamicValue.value) {
+        add("Вага(кг)/Кількість", dynamicValue.value);
+    }
+
+    if (callsign.value || phone.value) {
+        add("Позивний + контакт на позиції", `${callsign.value}; ${phone.value}`);
+    }
+
+    add("Коментар", comment.value);
+
+    const now = new Date().toLocaleTimeString("uk-UA");
+    text += `ID заявки: ${shortID}\n${now}`;
+
+    const url = `https://wa.me/380994750678?text=${encodeURIComponent(text)}`;
+    const scriptURL = "https://script.google.com/macros/s/AKfycbyN8r_nDF-b9U8ljwFiWkYcZlxwwY2kH7ojPtlzV5YQnza_zkybzOvNIbHYCvxVFs7iHQ/exec";
 
 const today = new Date();
 const formattedDate = today.toLocaleDateString("uk-UA");
@@ -18,9 +259,13 @@ fetch(scriptURL, {
         date: formattedDate
     })
 })
-.then(() => {
-    window.location.href = url; // редирект в WhatsApp
-})
 .catch(() => {
     alert("Помилка збереження в таблицю");
 });
+    document.getElementById("form").reset();
+    window.location.href = url;
+});
+</script>
+
+</body>
+    </html>
