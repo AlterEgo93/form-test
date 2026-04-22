@@ -5,7 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Нова заявка</title>
 
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+    
+
 <style>
+* {
+    box-sizing: border-box;
+}
+
 body {
     margin: 0;
     font-family: Arial, sans-serif;
@@ -13,6 +23,7 @@ body {
     color: #fff;
 }
 
+/* HEADER */
 .header {
     padding: 15px;
     background: #1a1a1a;
@@ -27,14 +38,26 @@ body {
     height: 24px;
 }
 
+/* CENTER */
 .container {
-    padding: 15px;
+    display: flex;
+    justify-content: center;
+    padding: 20px 10px;
 }
 
+/* FORM */
+form {
+    width: 100%;
+    max-width: 320px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* LABELS */
 label {
-    display: block;
     margin: 15px 0 5px;
     color: #ccc;
+    align-self: flex-start;
 }
 
 .required::after {
@@ -43,6 +66,7 @@ label {
     margin-left: 4px;
 }
 
+/* INPUTS */
 input, select, textarea {
     width: 100%;
     padding: 12px;
@@ -53,32 +77,49 @@ input, select, textarea {
     font-size: 16px;
 }
 
-.hidden {
-    display: none;
+/* TEXTAREA */
+textarea {
+    min-height: 100px;
+    resize: vertical;
 }
 
-button {
+/* HIDDEN & DYNAMIC BLOCKS */
+.hidden {
+    display: none !important;
+}
+
+/* Вирівнювання внутрішніх елементів прихованих блоків */
+#dynamicBlock, #contactBlock {
+    display: flex;
+    flex-direction: column;
+}
+
+/* UNIFIED BUTTON STYLE */
+.btn {
     width: 100%;
     padding: 14px;
-    margin-top: 20px;
-    border: none;
+    margin-top: 20px; /* Трохи збільшив відступ зверху для кнопки */
     border-radius: 8px;
     font-size: 16px;
-    background: #d4af37;
-    color: #000;
     font-weight: bold;
+    text-align: center;
+    display: block;
+    text-decoration: none;
+    cursor: pointer;
 }
 
-.link-btn {
-    display: block;
-    text-align: center;
-    margin-top: 10px;
-    padding: 12px;
-    border-radius: 8px;
+/* SUBMIT */
+button.btn {
+    border: none;
     background: #d4af37;
     color: #000;
-    text-decoration: none;
-    font-weight: bold;
+}
+
+/* LINK BUTTON */
+a.btn {
+    background: #d4af37;
+    color: #000;
+    margin-top: 10px;
 }
 </style>
 </head>
@@ -135,9 +176,9 @@ button {
 <label>Коментар</label>
 <textarea id="comment"></textarea>
 
-<button type="submit">Надіслати заявку</button>
+<button type="submit" class="btn">Надіслати заявку</button>
 
-<a class="link-btn" href="#">Перевірити статус</a>
+<a class="btn" href="https://AlterEgo93.github.io/checkid">Перевірити статус</a>
 
 </form>
 </div>
@@ -151,7 +192,25 @@ const dynamicValue = document.getElementById("dynamicValue");
 const position = document.getElementById("position");
 const contactBlock = document.getElementById("contactBlock");
 
-// логіка поля вага/кількість
+const unit = document.getElementById("unit");
+const coords = document.getElementById("coords");
+const callsign = document.getElementById("callsign");
+const phone = document.getElementById("phone");
+const comment = document.getElementById("comment");
+
+/* ENTER & AUTO navigation */
+function focusNext(el) {
+    // Шукаємо всі поля, які не мають класу hidden та не знаходяться всередині hidden батька
+    const inputs = Array.from(document.querySelectorAll("input, select, textarea"))
+        .filter(e => e.offsetParent !== null);
+
+    const index = inputs.indexOf(el);
+    if (inputs[index + 1]) {
+        inputs[index + 1].focus();
+    }
+}
+
+/* cargo logic */
 cargo.addEventListener("change", () => {
     const val = cargo.value;
 
@@ -164,34 +223,22 @@ cargo.addEventListener("change", () => {
         dynamicBlock.classList.remove("hidden");
         dynamicLabel.innerText = "Вага (кг)";
     }
-
+    
+    // Автоматичний перехід на наступне поле після вибору
     focusNext(cargo);
 });
 
-// показ контактів
+/* contact show */
 position.addEventListener("input", () => {
-    if (position.value.trim() !== "") {
-        contactBlock.classList.remove("hidden");
-    } else {
-        contactBlock.classList.add("hidden");
-    }
+    contactBlock.classList.toggle("hidden", position.value.trim() === "");
 });
 
-// генерація ID
+/* ID */
 function generateID() {
     return Math.random().toString(36).substring(2, 10);
 }
 
-// автоперехід
-function focusNext(el) {
-    const inputs = Array.from(document.querySelectorAll("input, select, textarea"))
-        .filter(e => e.offsetParent !== null);
-
-    const index = inputs.indexOf(el);
-    if (inputs[index + 1]) inputs[index + 1].focus();
-}
-
-document.querySelectorAll("input, textarea").forEach(el => {
+document.querySelectorAll("input, textarea, select").forEach(el => {
     el.addEventListener("keydown", e => {
         if (e.key === "Enter") {
             e.preventDefault();
@@ -200,14 +247,9 @@ document.querySelectorAll("input, textarea").forEach(el => {
     });
 });
 
-cargo.addEventListener("change", () => focusNext(cargo));
+window.onload = () => unit.focus();
 
-// фокус при відкритті
-window.onload = () => {
-    document.getElementById("unit").focus();
-};
-
-// submit
+/* submit logic */
 document.getElementById("form").addEventListener("submit", function(e) {
     e.preventDefault();
 
@@ -226,46 +268,30 @@ document.getElementById("form").addEventListener("submit", function(e) {
     add("Що веземо", cargo.value);
 
     if (!dynamicBlock.classList.contains("hidden") && dynamicValue.value) {
-        add("Вага(кг)/Кількість", dynamicValue.value);
+        add("Вага/Кількість", dynamicValue.value);
     }
 
-    if (callsign.value || phone.value) {
-        add("Позивний + контакт на позиції", `${callsign.value}; ${phone.value}`);
+    if (!contactBlock.classList.contains("hidden")) {
+        if (callsign.value || phone.value) {
+            add("Контакт", `${callsign.value}; ${phone.value}`);
+        }
     }
 
     add("Коментар", comment.value);
 
     const now = new Date().toLocaleTimeString("uk-UA");
-    text += `ID заявки: ${shortID}\n${now}`;
+    text += `ID: ${shortID}\n${now}`;
 
     const url = `https://wa.me/380994750678?text=${encodeURIComponent(text)}`;
     const scriptURL = "https://script.google.com/macros/s/AKfycbyN8r_nDF-b9U8ljwFiWkYcZlxwwY2kH7ojPtlzV5YQnza_zkybzOvNIbHYCvxVFs7iHQ/exec";
+    const formattedDate = new Date().toLocaleDateString("uk-UA");
 
-const today = new Date();
-const formattedDate = today.toLocaleDateString("uk-UA");
+    
 
-fetch(scriptURL, {
-    method: "POST",
-    body: JSON.stringify({
-        id: id,
-        unit: unit.value,
-        position: position.value,
-        coords: coords.value,
-        cargo: cargo.value,
-        dynamic: dynamicValue.value,
-        callsign: callsign.value,
-        phone: phone.value,
-        comment: comment.value,
-        date: formattedDate
-    })
-})
-.catch(() => {
-    alert("Помилка збереження в таблицю");
-});
     document.getElementById("form").reset();
-    window.location.href = url;
+    window.open(url, "_self");
 });
 </script>
 
 </body>
-    </html>
+</html>
